@@ -15,6 +15,7 @@ drf-spectacular = "*"
 whitenoise = "*"
 gunicorn = "*"
 psycopg2 = "*"
+django-cors-headers = "*"
 
 [dev-packages]
 pytest = "*"
