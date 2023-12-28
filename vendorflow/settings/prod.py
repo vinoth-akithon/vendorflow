@@ -9,7 +9,7 @@ DEBUG = False
 ALLOWED_HOSTS = [os.getenv("ALLOWED_HOSTS").split(" ")]
 
 DATABASES = {
-    'default': dj_database_url.config(os.getenv("DATABASE_URL"))
+    'default': dj_database_url.config()
 }
 
 OPENAPI_DOCUMENT_VISIBILITY = os.getenv("OPENAPI_DOCUMENT_VISIBILITY", False)
