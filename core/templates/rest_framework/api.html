@@ -3,7 +3,7 @@
 {% load i18n %}
 {% load rest_framework %}
 
-
+{% block title %}{% if name %}{{ name }} - {% endif %}Vendor Flow{% endblock %}
 
 {% block navbar %}
     <div class="navbar navbar-static-top {% block bootstrap_navbar_variant %}navbar-inverse{% endblock %}"
