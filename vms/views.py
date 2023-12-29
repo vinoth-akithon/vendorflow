@@ -19,10 +19,13 @@ class VendorViewsSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericVi
     serializer_class = VendorSerializer
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve", "performance"]:
+        if self.request.method in SAFE_METHODS:
+            if self.action == "me":
+                return [IsVendor()]
             return [IsAuthenticated()]
-        elif self.action == "me":
-            return [IsVendor()]
+        elif self.request.method == "PUT":
+            if self.action == "me":
+                return [IsVendor()]
 
     @extend_schema(description="Returns the list of Vendors. *Allowed Users*: [`Admin`, `Vendor`, `Purchaser`]", summary="Get vendors list")
     def list(self, request, *args, **kwargs):
@@ -50,7 +53,8 @@ class VendorViewsSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, GenericVi
     @extend_schema(description="Returns Vendor performance matrix. *Allowed Users*: [`Admin`, `Purchaser`, `Vendor`]", summary="Retrive performance matrix")
     @action(detail=True, methods=SAFE_METHODS)
     def performance(self, request: Request, pk: str):
-        vendor = Vendor.objects.get(pk=pk)
+        vendor = get_object_or_404(
+            Vendor.objects.all(), pk=pk)
         serializer = VendorPermormanceSerializer(vendor)
         return Response(serializer.data)
 
@@ -59,18 +63,21 @@ class PurchaserViewset(mixins.ListModelMixin, mixins.RetrieveModelMixin, Generic
     serializer_class = PurchaserSerializer
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
+        if self.request.method in SAFE_METHODS:
+            if self.action == "me":
+                return [IsPurchaser()]
             return [IsAdminOrVendor()]
-        elif self.action == "me":
-            return [IsPurchaser()]
+        elif self.request.method == "PUT":
+            if self.action == "me":
+                return [IsPurchaser()]
 
     def get_queryset(self):
+        queryset = Purchaser.objects.all()
         user = self.request.user
-        if user.is_staff:
-            return Purchaser.objects.all()
-        elif user.account_type == "V":
-            return Purchaser.objects.filter(
+        if user.account_type == "V":
+            queryset = queryset.filter(
                 orders__vendor__user_id=user.pk).distinct()
+        return queryset
 
     @extend_schema(description="Returns the list of Purchasers based on `Permissions`. *Allowed Users*: [`Admin`, `Vendor`]", summary="Get purchasers list")
     def list(self, request, *args, **kwargs):
@@ -84,8 +91,9 @@ class PurchaserViewset(mixins.ListModelMixin, mixins.RetrieveModelMixin, Generic
     @extend_schema(description="Updates Purchaser details. *Allowed Users*: [`Purchaser`]", summary="Update my detials", methods=["PUT"])
     @action(detail=False, methods=["GET", "PUT", "OPTIONS", "HEAD"])
     def me(self, request: Request):
-        purchaser = Purchaser.objects.get(
-            user_id=request.user.id)
+
+        purchaser = get_object_or_404(
+            Purchaser.objects.all(), user_id=request.user.id)
         if request.method == "GET":
             serializer = PurchaserSerializer(purchaser)
             return Response(serializer.data)
@@ -126,34 +134,32 @@ class PurchaseOrderViewSet(ModelViewSet):
         return CreatePurchaseOrderSerializer
 
     def get_permissions(self):
-        if self.request.method == "POST":
-            return [IsPurchaser()]
-        elif self.request.method == "GET":
+        if self.request.method in SAFE_METHODS:
             if self.action == "rating":
                 return [IsPurchaser()]
             elif self.action == "acknowledge":
                 return [IsVendor()]
             return [IsAuthenticated()]
+        elif self.request.method == "POST":
+            return [IsPurchaser()]
         elif self.request.method == "PUT":
             if self.action in ["acknowledge", "delivery"]:
                 return [IsVendor()]
             elif self.action == "rating":
                 return [IsPurchaser()]
-            elif self.request.user.is_staff:
-                return [IsPurchaser()]
+            return [IsPurchaser()]
         elif self.request.method == "DELETE":
             return [IsPurchaser()]
-        return [IsAdminOrPurchaser()]
 
     def get_queryset(self):
+        queryset = PurchaseOrder.objects.all()
         user = self.request.user
 
-        if user.is_staff:
-            return PurchaseOrder.objects.all()
-        elif user.account_type == "V":
-            return PurchaseOrder.objects.filter(vendor__user_id=user.pk)
+        if user.account_type == "V":
+            queryset = queryset.filter(vendor__user_id=user.pk)
         elif user.account_type == "P":
-            return PurchaseOrder.objects.filter(purchaser__user_id=user.pk)
+            queryset = queryset.filter(purchaser__user_id=user.pk)
+        return queryset
 
     def get_serializer_context(self):
         try:
@@ -179,7 +185,7 @@ class PurchaseOrderViewSet(ModelViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(description="Takes `PO ID` and perform cancelling and Returns confirmation message. *Allowed Users*: [`Purchaser`]", summary="Cancel the existing `PO`")
-    def destroy(self, request, *args, **kwargs):
+    def destroy(self, request: Request, *args, **kwargs):
         purchase_order = self.get_object()
         if purchase_order.acknowledged_date and purchase_order.actual_delivered_date:
             return Response({"message": "Purchase order cannot be cancelled, It seems already delivered"}, status=status.HTTP_400_BAD_REQUEST)
