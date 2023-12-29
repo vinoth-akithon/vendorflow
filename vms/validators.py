@@ -1,4 +1,3 @@
-import jsonschema
 
 purchase_order_items_schema = {
     "$schema": "http://json-schema.org/draft-07/schema#",

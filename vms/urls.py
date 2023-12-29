@@ -1,4 +1,3 @@
-from django.urls import path
 from vms import views
 from rest_framework.routers import DefaultRouter
 

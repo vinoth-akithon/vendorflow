@@ -129,14 +129,3 @@ class TestUserLogin:
         assert response.status_code == status.HTTP_200_OK
         assert "access" in response_data
         assert "refresh" in response_data
-
-
-# class TestTokenRenewal:
-#     def test_if_refresh_token_given_and_return_200(self):
-#         pass
-
-#     def test_if_access_token_given_and_return_401(self):
-#         pass
-
-#     def test_if_invalid_refresh_token_given_and_return_401(self):
-#         pass

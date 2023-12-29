@@ -1,10 +1,9 @@
+import jsonschema
 from django.utils import timezone
 from rest_framework import serializers
 from vms.models import PurchaseOrder, Purchaser, Vendor
-import jsonschema
 from .validators import purchase_order_items_schema
-from vms.signals import purchase_order_delivered, quality_rating_provided, purchase_order_acknowledged, purchase_order_status_changed
-from drf_spectacular.utils import inline_serializer, extend_schema_serializer
+from vms.signals import *
 
 
 class VendorSerializer(serializers.ModelSerializer):

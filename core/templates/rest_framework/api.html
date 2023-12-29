@@ -1,3 +1,23 @@
-{% extends "rest_framework/base.html" %} {% load i18n %} {% block branding %}
-<a class="navbar-brand" rel="nofollow" href="#"> {% trans 'My new title' %} </a>
+{% extends "rest_framework/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load rest_framework %}
+
+
+
+{% block navbar %}
+    <div class="navbar navbar-static-top {% block bootstrap_navbar_variant %}navbar-inverse{% endblock %}"
+          role="navigation" aria-label="{% trans "navbar" %}">
+      <div class="container">
+        <span>
+          {% block branding %}
+            <a class='navbar-brand' rel="nofollow" href='/'>
+              Vendor Flow
+            </a>
+          {% endblock %}
+        </span>
+        <ul class="nav navbar-nav pull-right">
+        </ul>
+      </div>
+    </div>
 {% endblock %}

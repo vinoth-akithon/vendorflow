@@ -49,19 +49,19 @@ class PurchaseOrder(models.Model):
         max_length=1, choices=PO_STATUS, default=PO_PENDING)
     quality_rating = models.FloatField(
         null=True, validators=[validators.MaxValueValidator(settings.RATING_BASE_VALUE), validators.MinValueValidator(0)])
-    # When purchaser order placed date
+    # When a purchaser placed an order
     ordered_date = models.DateTimeField(auto_now_add=True)
-    # When order assigned to the respecting vendor
+    # When an order assigned to the respecting vendor
     issued_date = models.DateTimeField(null=True)
-    # When order acknowledged by the vendor
+    # When an order acknowledged by the vendor
     acknowledged_date = models.DateTimeField(null=True)
-    # During acknowledgement vendor commiting date
+    # During acknowledgement, vendor committed to delivery date
     expected_delivery_date = models.DateTimeField(null=True)
-    actual_delivered_date = models.DateTimeField(
-        null=True)  # When order delivered to the purchacer
+    # When an order delivered to the purchacer
+    actual_delivered_date = models.DateTimeField(null=True)
 
     def __str__(self) -> str:
-        return str(self.pk)
+        return f"{self.pk}"
 
 
 class HistoricalPerformance(models.Model):
@@ -71,3 +71,6 @@ class HistoricalPerformance(models.Model):
     quality_rating_avg = models.FloatField(null=True, blank=True)
     average_response_time = models.FloatField(null=True, blank=True)
     fulfillment_rate = models.FloatField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.pk}"

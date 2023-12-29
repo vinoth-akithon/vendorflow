@@ -4,9 +4,9 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     VENDOR = "V"
-    PARCHASER = "P"
+    PURCHASER = "P"
     ACCOUNT_TYPE = [
-        (PARCHASER, "Parchaser"),
+        (PURCHASER, "Purchaser"),
         (VENDOR, "Vendor"),
     ]
     account_type = models.CharField(
